@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Category } from "./Category.mjs";
 
 const productSchema = new mongoose.Schema({
     name:{
@@ -16,6 +17,10 @@ const productSchema = new mongoose.Schema({
     picture:{
         type:String,
         required:true
+    },
+    category:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'Category'
     }
 });
 export const Product = mongoose.model('Product',productSchema)
