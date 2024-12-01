@@ -4,7 +4,7 @@ import ProductRouter from "./ProductRouter.mjs";
 
 const router = Router();
 
-router.use('/Category',CategoryRouter);
-router.use('/Product', ProductRouter);
+router.use('/category',CategoryRouter);
+router.use('/product', ProductRouter);
 
 export default router;

@@ -44,6 +44,18 @@ export default class ProductController{
         }
     }
 
+    static async update(req,res) {
+        try {
+            const {id} = req.params;
+            const {name,price,description} = req.body;
+            await Product.findByIdAndUpdate(id,{name,price,description},{new:true})
+            return res.status(200).json({msg: 'Продукт обновлён'});
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
     static async delete(req, res) {
         try {
             const {id} = req.params;
