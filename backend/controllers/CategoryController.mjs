@@ -29,4 +29,14 @@ export default class CategoryController{
             return res.status(500).json({ error: error.message });
         }
     }
+
+    static async load(req, res) {
+        try {
+            const alldata = await Category.find()
+            res.json(alldata)
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({ error: error.message });
+        }
+    }
 }

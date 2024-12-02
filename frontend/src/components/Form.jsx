@@ -1,32 +1,58 @@
-import { useState } from "react";
-import { postCard } from "../services/service";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import store from "../stores/store";
-import { Form, Button, Col, Row, Modal } from 'react-bootstrap';
+import { Form, Button, Col, Row, Modal, Dropdown } from 'react-bootstrap';
 
 const Forma = () => {
   const [files, setFiles] = useState([]);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    axios.get('http://localhost:3006/category/load')
+      .then(res => {
+        setCategories(res.data);
+      })
+      .catch(error => {
+        console.error("Ошибка при загрузке категорий:", error);
+      });
+  }, []);
 
   const sendFile = async (event) => {
     event.preventDefault();
 
-    if (!name || price <= 0 || !description || files.length <= 0) return;
+    if (!name || price <= 0 || !description || files.length <= 0 || !categoryId) return;
 
-    const cardData = { name, price, description };
-    
-    postCard(cardData, files);
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('price', price);
+    formData.append('description', description);
+    formData.append('picture', files[0]);
 
-    setName('');
-    setPrice('');
-    setDescription('');
+    try {
+      const response = await axios.post(`http://localhost:3006/product/create/${categoryId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
-    setFiles([]);
-    document.querySelector("form input[type=file]").value = null;
+      store.addCard(response.data);
 
-    setShowModal(false);
+      setName('');
+      setPrice('');
+      setDescription('');
+      setCategoryId('');
+      setFiles([]);
+      document.querySelector("form input[type=file]").value = null;
+
+      setShowModal(false);
+    } catch (error) {
+      console.error("Ошибка при создании продукта:", error);
+    }
   };
 
   const handleShow = () => setShowModal(true);
@@ -34,7 +60,6 @@ const Forma = () => {
 
   return (
     <div>
-
       <Button
         variant="primary"
         style={{ borderRadius: "25%", padding: "15px 20px" }}
@@ -44,9 +69,26 @@ const Forma = () => {
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
-        <Modal.Header closeButton/>
+        <Modal.Header closeButton />
         <Modal.Body>
           <Form onSubmit={sendFile} style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+            <Form.Group controlId="formCategoryId">
+              <Form.Label>Выберите категорию *</Form.Label>
+              <Dropdown>
+                <Dropdown.Toggle variant="dark w-100" id="dropdown-basic">
+                  {categoryId ? categories.find(cat => cat._id === categoryId).name : 'Выберите категорию'}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className="w-100">
+                  {categories.map(category => (
+                    <Dropdown.Item key={category._id} onClick={() => setCategoryId(category._id)}>
+                      {category.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+            </Form.Group>
+
             <Form.Group controlId="formName">
               <Form.Label>Название товара *</Form.Label>
               <Form.Control

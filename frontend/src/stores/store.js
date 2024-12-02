@@ -1,10 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 
 class Store {
-    products = []
+    products = [];
 
     constructor() {
-        this.products = [];
         makeAutoObservable(this);
     }
 
@@ -14,6 +13,21 @@ class Store {
 
     getCards() {
         return this.products;
+    }
+
+    addCard(card) {
+        this.products.push(card);
+    }
+
+    removeCard(cardId) {
+        this.products = this.products.filter(product => product._id !== cardId);
+    }
+
+    updateCard(updatedCard) {
+        const index = this.products.findIndex(product => product._id === updatedCard._id);
+        if (index !== -1) {
+            this.products[index] = updatedCard;
+        }
     }
 }
 
